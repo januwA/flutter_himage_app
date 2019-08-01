@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff303030),
+      backgroundColor: Theme.of(context).primaryColor,
       body: ListView(
         children: <Widget>[
           _buildTags(),
@@ -82,8 +82,8 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                         child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(
-                          Theme.of(context).primaryColor),
+                      valueColor:
+                          AlwaysStoppedAnimation(Theme.of(context).accentColor),
                     )),
                   );
                 }
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                         child: Text(
                           snap.error,
                           style: Theme.of(context).textTheme.body1.copyWith(
-                                color: Theme.of(context).primaryColor,
+                                color: Theme.of(context).accentColor,
                               ),
                         ),
                       ),
@@ -104,6 +104,68 @@ class _HomePageState extends State<HomePage> {
                   } else {
                     ImagesDto body = snap.data;
                     int lastPage = (body.meta.total / pageOffset).ceil();
+
+                    var pb = _buildPageButton(text: '...');
+                    List<Widget> splitPageButtons = [
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(Icons.chevron_left),
+                        onPressed: () => _setPage(page - 1),
+                      ),
+                      _buildPageButton(
+                        text: '1',
+                        color: page == 1 ? Theme.of(context).accentColor : null,
+                        onTap: () => _setPage(1),
+                      ),
+                    ];
+
+                    if (page <= 2 || page >= lastPage - 1) {
+                      splitPageButtons.addAll([
+                        _buildPageButton(
+                          text: '2',
+                          color:
+                              page == 2 ? Theme.of(context).accentColor : null,
+                          onTap: () => _setPage(2),
+                        ),
+                        pb,
+                        _buildPageButton(
+                          text: '${lastPage - 1}',
+                          color: page == lastPage - 1
+                              ? Theme.of(context).accentColor
+                              : null,
+                          onTap: () => _setPage(lastPage - 1),
+                        ),
+                      ]);
+                    } else {
+                      splitPageButtons.addAll([
+                        pb,
+                        _buildPageButton(
+                          text: '$page',
+                          color: Theme.of(context).accentColor,
+                          onTap: () => _setPage(page),
+                        ),
+                        pb,
+                      ]);
+                    }
+
+                    splitPageButtons.add(
+                      _buildPageButton(
+                        text: '$lastPage',
+                        color: page == lastPage
+                            ? Theme.of(context).accentColor
+                            : null,
+                        onTap: () => _setPage(lastPage),
+                      ),
+                    );
+
+                    splitPageButtons.add(
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(Icons.chevron_right),
+                        onPressed: () => _setPage(page + 1),
+                      ),
+                    );
+
                     return Column(
                       children: [
                         ...body.data.map((DataDto item) {
@@ -119,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                               return Center(
                                 child: CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation(
-                                      Theme.of(context).primaryColor),
+                                      Theme.of(context).accentColor),
                                   value: loadingProgress.expectedTotalBytes !=
                                           null
                                       ? loadingProgress.cumulativeBytesLoaded /
@@ -136,119 +198,12 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              IconButton(
-                                color: Colors.white,
-                                icon: Icon(Icons.chevron_left),
-                                onPressed: () {
-                                  setState(() {
-                                    page -= 1;
-                                  });
-                                },
-                              ),
-                              _buildPageButton(
-                                  text: '$page',
-                                  color: Theme.of(context).primaryColor),
-                              _buildPageButton(
-                                  text: '${page + 1}',
-                                  onTap: () {
-                                    setState(() {
-                                      page = page + 1;
-                                    });
-                                  }),
-                              _buildPageButton(text: '...'),
-                              _buildPageButton(
-                                  text: '${lastPage - 1}',
-                                  onTap: () {
-                                    setState(() {
-                                      page = lastPage - 1;
-                                    });
-                                  }),
-                              _buildPageButton(
-                                  text: '$lastPage',
-                                  onTap: () {
-                                    setState(() {
-                                      page = lastPage;
-                                    });
-                                  }),
-                              IconButton(
-                                color: Colors.white,
-                                icon: Icon(Icons.chevron_right),
-                                onPressed: () {
-                                  setState(() {
-                                    page += 1;
-                                  });
-                                },
-                              ),
-                            ],
+                            children: splitPageButtons,
                           ),
                         ),
 
                         /// go to page
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                'NAV TO:',
-                                style: TextStyle(
-                                  color: Colors.grey[200],
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: SizedBox(
-                                  width: Theme.of(context).buttonTheme.minWidth,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Color(0xff17181a),
-                                      borderRadius: BorderRadius.circular(4.0),
-                                    ),
-                                    child: TextField(
-                                      controller: enterPageController,
-                                      keyboardType: TextInputType.number,
-                                      textInputAction: TextInputAction.done,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText: 'PAGE #',
-                                        hintStyle:
-                                            TextStyle(color: Colors.white60),
-                                        border: InputBorder.none,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      cursorColor:
-                                          Theme.of(context).primaryColor,
-                                      cursorWidth: 4,
-                                      cursorRadius: Radius.circular(4.0),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              RaisedButton(
-                                color: Theme.of(context).primaryColor,
-                                textColor: Colors.white,
-                                child: Text('GO'),
-                                onPressed: () {
-                                  try {
-                                    int p = int.parse(goPage);
-                                    if (p <= lastPage) {
-                                      setState(() {
-                                        page = p;
-                                      });
-                                    }
-                                  } catch (_) {} finally {
-                                    enterPageController.clear();
-                                  }
-                                },
-                              )
-                            ],
-                          ),
-                        ),
+                        _buildInputPage(context, lastPage),
                       ],
                     );
                   }
@@ -257,6 +212,77 @@ class _HomePageState extends State<HomePage> {
                 return SizedBox();
               },
             )
+        ],
+      ),
+    );
+  }
+
+  void _setPage(int newPage) {
+    setState(() {
+      page = newPage;
+    });
+  }
+
+  /// 跳转到输入的page
+  Padding _buildInputPage(BuildContext context, int lastPage) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            'NAV TO:',
+            style: TextStyle(
+              color: Colors.grey[300],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: SizedBox(
+              width: 100,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xff17181a),
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                child: TextField(
+                  controller: enterPageController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'PAGE #',
+                    hintStyle: TextStyle(color: Colors.white60),
+                    border: InputBorder.none,
+                  ),
+                  textAlign: TextAlign.center,
+                  cursorColor: Theme.of(context).accentColor,
+                  cursorWidth: 2,
+                  cursorRadius: Radius.circular(4.0),
+                ),
+              ),
+            ),
+          ),
+          RaisedButton(
+            color: Theme.of(context).accentColor,
+            textColor: Colors.white,
+            child: Text('GO'),
+            onPressed: () {
+              try {
+                int p = int.parse(goPage);
+                if (p <= lastPage) {
+                  setState(() {
+                    page = p;
+                  });
+                }
+              } catch (_) {} finally {
+                enterPageController.clear();
+              }
+            },
+          )
         ],
       ),
     );
