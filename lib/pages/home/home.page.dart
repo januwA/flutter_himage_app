@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:himage/dto/images/images.dto.dart';
+import 'package:himage/pages/full_screen/full_screen.page.dart';
+import 'package:himage/util/build_image_loading.dart';
 import 'package:http/http.dart' as http;
 import 'package:random_color/random_color.dart';
 
@@ -94,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.all(8.0),
                       child: Center(
                         child: Text(
-                          snap.error,
+                          '${snap.error}',
                           style: Theme.of(context).textTheme.body1.copyWith(
                                 color: Theme.of(context).accentColor,
                               ),
@@ -168,32 +170,25 @@ class _HomePageState extends State<HomePage> {
 
                     return Column(
                       children: [
+                        /// images list
                         ...body.data.map((DataDto item) {
-                          return Image.network(
-                            item.canonicalUrl,
-                            fit: BoxFit.contain,
-                            loadingBuilder: (
-                              BuildContext context,
-                              Widget child,
-                              ImageChunkEvent loadingProgress,
-                            ) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation(
-                                      Theme.of(context).accentColor),
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes
-                                      : null,
-                                ),
-                              );
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => FullScreenPage(
+                                        images: body.data,
+                                        initialPage: body.data.indexOf(item),
+                                      )));
                             },
+                            child: Image.network(
+                              item.canonicalUrl,
+                              fit: BoxFit.contain,
+                              loadingBuilder: buildImageLoading,
+                            ),
                           );
                         }).toList(),
 
-                        /// list
+                        /// split button list
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Row(

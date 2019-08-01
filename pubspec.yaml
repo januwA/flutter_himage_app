@@ -1,6 +1,6 @@
 name: himage
 description: himage
-version: 0.1.0
+version: 0.2.0
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -14,6 +14,9 @@ dependencies:
   built_collection:
   random_color:
   rxdart:
+  flutter_downloader: ^1.1.9
+  path_provider:
+  path:
 
 dev_dependencies:
   flutter_test:
