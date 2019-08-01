@@ -1,11 +1,10 @@
-import 'dart:io';
-
+import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 import 'package:himage/dto/images/images.dto.dart';
 import 'package:himage/pages/full_screen/full_screen.page.dart';
-import 'package:himage/util/build_image_loading.dart';
-import 'package:http/http.dart' as http;
-import 'package:random_color/random_color.dart';
+import 'package:himage/pages/home/home.store.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:himage/shared/widgets/himage.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,49 +12,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController enterPageController = TextEditingController();
-  String get goPage => enterPageController.text;
+  final store = HomeStore();
 
-  /// tags
-  final List<ChannelName> channelNames = [
-    ChannelName(text: 'media', active: true),
-    ChannelName(text: 'nsfw_general', active: true),
-    ChannelName(text: 'furry'),
-    ChannelName(text: 'futa'),
-    ChannelName(text: 'yaoi'),
-    ChannelName(text: 'yuri'),
-    ChannelName(text: 'irl-3d'),
-  ];
-
-  /// active text in tags
-  List<String> get channelNameIn =>
-      channelNames.where((c) => c.active).map((c) => c.text).toList();
-
-  /// 每页有24张图
-  final int pageOffset = 24;
-
-  /// 默认显示第一页
-  int page = 1;
-
-  /// api 地址
-  Uri get apiUrl => Uri(
-        scheme: 'https',
-        host: 'hanime.tv',
-        path: '/api/v3/community_uploads',
-        queryParameters: {
-          "channel_name__in[]": channelNameIn,
-          '__offset': '${(page - 1) * pageOffset}',
-          '__order': 'created_at,DESC'
-        },
-      );
-  final headers = {
-    HttpHeaders.userAgentHeader:
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
-    'x-directive': 'api',
-    'x-session-token': '',
-    'x-signature': '',
-    'x-time': '0',
-  };
+  @override
+  void dispose() {
+    store.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,225 +27,134 @@ class _HomePageState extends State<HomePage> {
       body: ListView(
         children: <Widget>[
           _buildTags(),
-          if (channelNameIn.isEmpty)
-            Padding(
-              padding: EdgeInsets.all(14.0),
-              child: Text(
-                'There are no images for the current page / channel combination!',
-                style: Theme.of(context)
-                    .textTheme
-                    .title
-                    .copyWith(color: Colors.white),
-              ),
-            )
-          else
-            FutureBuilder(
-              future: getImages(),
-              builder: (context, AsyncSnapshot<ImagesDto> snap) {
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                        child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation(Theme.of(context).accentColor),
-                    )),
-                  );
-                }
+          Observer(
+            builder: (_) => store.channelNameIn.isEmpty
+                ? NotTags()
+                : Observer(
+                    builder: (_) => FutureBuilder(
+                      future: store.getImages(),
+                      builder: (context, AsyncSnapshot<ImagesDto> snap) {
+                        ConnectionState status = snap.connectionState;
 
-                if (snap.connectionState == ConnectionState.done) {
-                  if (snap.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: Text(
-                          '${snap.error}',
-                          style: Theme.of(context).textTheme.body1.copyWith(
-                                color: Theme.of(context).accentColor,
-                              ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    ImagesDto body = snap.data;
-                    int lastPage = (body.meta.total / pageOffset).ceil();
+                        if (status == ConnectionState.waiting) {
+                          return _buildLoading(context);
+                        }
 
-                    var pb = _buildPageButton(text: '...');
-                    List<Widget> splitPageButtons = [
-                      IconButton(
-                        color: Colors.white,
-                        icon: Icon(Icons.chevron_left),
-                        onPressed: () => _setPage(page - 1),
-                      ),
-                      _buildPageButton(
-                        text: '1',
-                        color: page == 1 ? Theme.of(context).accentColor : null,
-                        onTap: () => _setPage(1),
-                      ),
-                    ];
+                        if (status == ConnectionState.done) {
+                          if (snap.hasError) {
+                            return _buildError(snap, context);
+                          }
+                          ImagesDto body = snap.data;
+                          int lastPage = store.getLstPage(body.meta.total);
+                          return Column(
+                            children: [
+                              /// images list
+                              ..._buildListImages(body.data),
 
-                    if (page <= 2 || page >= lastPage - 1) {
-                      splitPageButtons.addAll([
-                        _buildPageButton(
-                          text: '2',
-                          color:
-                              page == 2 ? Theme.of(context).accentColor : null,
-                          onTap: () => _setPage(2),
-                        ),
-                        pb,
-                        _buildPageButton(
-                          text: '${lastPage - 1}',
-                          color: page == lastPage - 1
-                              ? Theme.of(context).accentColor
-                              : null,
-                          onTap: () => _setPage(lastPage - 1),
-                        ),
-                      ]);
-                    } else {
-                      splitPageButtons.addAll([
-                        pb,
-                        _buildPageButton(
-                          text: '$page',
-                          color: Theme.of(context).accentColor,
-                          onTap: () => _setPage(page),
-                        ),
-                        pb,
-                      ]);
-                    }
+                              /// split button list
+                              _buildSplitSection(context, lastPage),
 
-                    splitPageButtons.add(
-                      _buildPageButton(
-                        text: '$lastPage',
-                        color: page == lastPage
-                            ? Theme.of(context).accentColor
-                            : null,
-                        onTap: () => _setPage(lastPage),
-                      ),
-                    );
-
-                    splitPageButtons.add(
-                      IconButton(
-                        color: Colors.white,
-                        icon: Icon(Icons.chevron_right),
-                        onPressed: () => _setPage(page + 1),
-                      ),
-                    );
-
-                    return Column(
-                      children: [
-                        /// images list
-                        ...body.data.map((DataDto item) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => FullScreenPage(
-                                        images: body.data,
-                                        initialPage: body.data.indexOf(item),
-                                      )));
-                            },
-                            child: Image.network(
-                              item.canonicalUrl,
-                              fit: BoxFit.contain,
-                              loadingBuilder: buildImageLoading,
-                            ),
+                              /// go to page
+                              _buildInputPage(context, lastPage),
+                            ],
                           );
-                        }).toList(),
+                        }
 
-                        /// split button list
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: splitPageButtons,
-                          ),
-                        ),
-
-                        /// go to page
-                        _buildInputPage(context, lastPage),
-                      ],
-                    );
-                  }
-                }
-
-                return SizedBox();
-              },
-            )
+                        return SizedBox();
+                      },
+                    ),
+                  ),
+          ),
         ],
       ),
     );
   }
 
-  void _setPage(int newPage) {
-    setState(() {
-      page = newPage;
-    });
-  }
-
-  /// 跳转到输入的page
-  Padding _buildInputPage(BuildContext context, int lastPage) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            'NAV TO:',
-            style: TextStyle(
-              color: Colors.grey[300],
-            ),
+  Widget _buildSplitSection(BuildContext context, int lastPage) {
+    return Observer(
+      builder: (_) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _getSplitPageButtons(
+            context: context,
+            lastPage: lastPage,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: SizedBox(
-              width: 100,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Color(0xff17181a),
-                  borderRadius: BorderRadius.circular(4.0),
-                ),
-                child: TextField(
-                  controller: enterPageController,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'PAGE #',
-                    hintStyle: TextStyle(color: Colors.white60),
-                    border: InputBorder.none,
-                  ),
-                  textAlign: TextAlign.center,
-                  cursorColor: Theme.of(context).accentColor,
-                  cursorWidth: 2,
-                  cursorRadius: Radius.circular(4.0),
-                ),
-              ),
-            ),
-          ),
-          RaisedButton(
-            color: Theme.of(context).accentColor,
-            textColor: Colors.white,
-            child: Text('GO'),
-            onPressed: () {
-              try {
-                int p = int.parse(goPage);
-                if (p <= lastPage) {
-                  setState(() {
-                    page = p;
-                  });
-                }
-              } catch (_) {} finally {
-                enterPageController.clear();
-              }
-            },
-          )
-        ],
+        ),
       ),
     );
   }
 
+  /// 返回分页按钮
+  List<Widget> _getSplitPageButtons({
+    BuildContext context,
+    int lastPage,
+  }) {
+    var page = store.page;
+    var setPage = store.setPage;
+
+    var pb = _buildPageButton(text: '...');
+    List<Widget> splitPageButtons = [
+      /// prev
+      IconButton(
+        color: Colors.white,
+        icon: Icon(Icons.chevron_left),
+        onPressed: () => setPage(page - 1),
+      ),
+
+      /// first
+      _buildPageButton(
+        text: '1',
+        color: page == 1 ? Theme.of(context).accentColor : null,
+        onTap: () => setPage(1),
+      ),
+    ];
+
+    if (page <= 2 || page >= lastPage - 1) {
+      splitPageButtons.addAll([
+        _buildPageButton(
+          text: '2',
+          color: page == 2 ? Theme.of(context).accentColor : null,
+          onTap: () => setPage(2),
+        ),
+        pb,
+        _buildPageButton(
+          text: '${lastPage - 1}',
+          color: page == lastPage - 1 ? Theme.of(context).accentColor : null,
+          onTap: () => setPage(lastPage - 1),
+        ),
+      ]);
+    } else {
+      splitPageButtons.addAll([
+        pb,
+        _buildPageButton(
+          text: '$page',
+          color: Theme.of(context).accentColor,
+          onTap: () => setPage(page),
+        ),
+        pb,
+      ]);
+    }
+
+    splitPageButtons.add(
+      _buildPageButton(
+        text: '$lastPage',
+        color: page == lastPage ? Theme.of(context).accentColor : null,
+        onTap: () => setPage(lastPage),
+      ),
+    );
+
+    splitPageButtons.add(
+      IconButton(
+        color: Colors.white,
+        icon: Icon(Icons.chevron_right),
+        onPressed: () => setPage(page + 1),
+      ),
+    );
+    return splitPageButtons;
+  }
+
+  /// 分页按钮 ui
   Widget _buildPageButton({
     String text,
     Color color,
@@ -312,68 +184,187 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<ImagesDto> getImages() async {
-    print(apiUrl);
-    var r = await http.get(apiUrl, headers: headers);
-    if (r.statusCode == HttpStatus.ok) {
-      return ImagesDto.fromJson(r.body);
-    } else {
-      return Future.error(r.statusCode);
-    }
+  List<Widget> _buildListImages(BuiltList<DataDto> images) {
+    return images.map((DataDto item) {
+      return GestureDetector(
+        onTap: () => toFullScreenPage(
+          images: images,
+          initialPage: images.indexOf(item),
+        ),
+        child: HImage(item.canonicalUrl),
+      );
+    }).toList();
   }
 
-  Wrap _buildTags() {
-    return Wrap(
-      children: <Widget>[
-        for (ChannelName channelName in channelNames)
-          FlatButton(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 8.0),
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: channelName.active
-                        ? channelName.color
-                        : Colors.white.withOpacity(0),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: channelName.active
-                          ? channelName.color
-                          : Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-                Text(
-                  '#${channelName.text}',
-                  style: TextStyle(
-                    color: Colors.white
-                        .withOpacity(channelName.active ? 1.0 : 0.5),
-                  ),
-                ),
-              ],
+  /// 查看大图
+  toFullScreenPage({
+    BuiltList<DataDto> images,
+    int initialPage,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => FullScreenPage(
+          images: images,
+          initialPage: initialPage,
+        ),
+      ),
+    );
+  }
+
+  Padding _buildLoading(BuildContext context) {
+    Color color = Theme.of(context).accentColor;
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+          child: Column(
+        children: <Widget>[
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Loading...',
+            style: TextStyle(color: color),
+          ),
+        ],
+      )),
+    );
+  }
+
+  Padding _buildError(AsyncSnapshot<ImagesDto> snap, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: Text(
+          '${snap.error}',
+          style: Theme.of(context).textTheme.body1.copyWith(
+                color: Theme.of(context).accentColor,
+              ),
+        ),
+      ),
+    );
+  }
+
+  /// 跳转到输入的page
+  Padding _buildInputPage(BuildContext context, int lastPage) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            'NAV TO:',
+            style: TextStyle(
+              color: Colors.grey[300],
             ),
-            splashColor: Colors.white30,
-            onPressed: () {
-              setState(() {
-                channelName.active = !channelName.active;
-                page = 1;
-              });
-            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: SizedBox(
+              width: 100,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xff17181a),
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                child: TextField(
+                  controller: store.enterPageController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  onChanged: store.inputChange,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'PAGE #',
+                    hintStyle: TextStyle(color: Colors.white60),
+                    border: InputBorder.none,
+                  ),
+                  textAlign: TextAlign.center,
+                  cursorColor: Theme.of(context).accentColor,
+                  cursorWidth: 2,
+                  cursorRadius: Radius.circular(4.0),
+                ),
+              ),
+            ),
+          ),
+          Observer(
+            builder: (_) => AnimatedOpacity(
+              duration: Duration(milliseconds: 200),
+              opacity: store.showGoButton ? 1 : 0,
+              child: RaisedButton(
+                color: Theme.of(context).accentColor,
+                textColor: Colors.white,
+                child: Text('GO'),
+                onPressed: store.showGoButton ? store.goToNewPage : null,
+              ),
+            ),
           )
-      ],
+        ],
+      ),
+    );
+  }
+
+  /// 显示tags ui
+  Widget _buildTags() {
+    return Observer(
+      builder: (_) => Wrap(
+        children: <Widget>[
+          for (var channelName in store.channelNames)
+            Observer(
+              builder: (_) => FlatButton(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 8.0),
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: channelName.active
+                            ? channelName.color
+                            : Colors.white.withOpacity(0),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: channelName.active
+                              ? channelName.color
+                              : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '#${channelName.text}',
+                      style: TextStyle(
+                        color: Colors.white
+                            .withOpacity(channelName.active ? 1.0 : 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+                splashColor: Colors.white30,
+                onPressed: () => store.selectTag(channelName),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
 
-class ChannelName {
-  String text;
-  bool active;
-  Color color;
-  ChannelName({
-    this.text,
-    this.active = false,
-  }) : color = RandomColor().randomColor();
+class NotTags extends StatelessWidget {
+  const NotTags({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(14.0),
+      child: Text(
+        'There are no images for the current page / channel combination!',
+        style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
+      ),
+    );
+  }
 }

@@ -1,6 +1,6 @@
 name: himage
 description: himage
-version: 0.2.0
+version: 0.2.1
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -17,12 +17,15 @@ dependencies:
   flutter_downloader: ^1.1.9
   path_provider:
   path:
+  mobx:
+  flutter_mobx:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner:
   built_value_generator:
+  mobx_codegen:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
