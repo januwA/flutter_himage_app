@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSplitSection(BuildContext context, int lastPage) {
     return Observer(
       builder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: _getSplitPageButtons(
@@ -94,10 +94,9 @@ class _HomePageState extends State<HomePage> {
     var pb = _buildPageButton(text: '...');
     List<Widget> splitPageButtons = [
       /// prev
-      IconButton(
-        color: Colors.white,
-        icon: Icon(Icons.chevron_left),
-        onPressed: () => setPage(page - 1),
+      _buildIconButtom(
+        icon: Icons.chevron_left,
+        onTap: () => setPage(page - 1),
       ),
 
       /// first
@@ -143,13 +142,37 @@ class _HomePageState extends State<HomePage> {
     );
 
     splitPageButtons.add(
-      IconButton(
-        color: Colors.white,
-        icon: Icon(Icons.chevron_right),
-        onPressed: () => setPage(page + 1),
+      _buildIconButtom(
+        icon: Icons.chevron_right,
+        onTap: () => setPage(page + 1),
       ),
     );
     return splitPageButtons;
+  }
+
+  SizedBox _buildIconButtom({
+    IconData icon,
+    Function onTap,
+  }) {
+    return SizedBox(
+      width: 34,
+      height: 34,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xff424242),
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: GestureDetector(
+          child: Center(
+            child: Icon(
+              icon,
+              color: Colors.white,
+            ),
+          ),
+          onTap: onTap,
+        ),
+      ),
+    );
   }
 
   /// 分页按钮 ui
@@ -258,7 +281,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 跳转到输入的page
-  Padding _buildInputPage(BuildContext context, int lastPage) {
+  Widget _buildInputPage(BuildContext context, int lastPage) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -271,48 +294,47 @@ class _HomePageState extends State<HomePage> {
               color: Colors.grey[300],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: SizedBox(
-              width: 100,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Color(0xff17181a),
-                  borderRadius: BorderRadius.circular(4.0),
+          SizedBox(width: 10),
+          SizedBox(
+            width: 100,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xff17181a),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: TextField(
+                controller: store.enterPageController,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                onChanged: store.inputChange,
+                style: TextStyle(
+                  color: Colors.white,
                 ),
-                child: TextField(
-                  controller: store.enterPageController,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  onChanged: store.inputChange,
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'PAGE #',
-                    hintStyle: TextStyle(color: Colors.white60),
-                    border: InputBorder.none,
-                  ),
-                  textAlign: TextAlign.center,
-                  cursorColor: Theme.of(context).accentColor,
-                  cursorWidth: 2,
-                  cursorRadius: Radius.circular(4.0),
+                decoration: InputDecoration(
+                  hintText: 'PAGE #',
+                  hintStyle: TextStyle(color: Colors.white60),
+                  border: InputBorder.none,
                 ),
+                textAlign: TextAlign.center,
+                cursorColor: Theme.of(context).accentColor,
+                cursorWidth: 2,
+                cursorRadius: Radius.circular(4.0),
               ),
             ),
           ),
-          Observer(
-            builder: (_) => AnimatedOpacity(
+          SizedBox(width: 10),
+          Observer(builder: (_) {
+            return AnimatedOpacity(
               duration: Duration(milliseconds: 200),
               opacity: store.showGoButton ? 1 : 0,
-              child: RaisedButton(
+              child: FlatButton(
                 color: Theme.of(context).accentColor,
                 textColor: Colors.white,
                 child: Text('GO'),
-                onPressed: store.showGoButton ? store.goToNewPage : null,
+                onPressed: store.goToNewPage,
               ),
-            ),
-          )
+            );
+          })
         ],
       ),
     );

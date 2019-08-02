@@ -82,6 +82,7 @@ abstract class _HomeStore with Store {
   /// 前往指定page
   @action
   void goToNewPage() {
+    if (!showGoButton) return null;
     try {
       int p = int.parse(goPage);
       if (p <= _lastPage) {
@@ -89,6 +90,7 @@ abstract class _HomeStore with Store {
       }
     } catch (_) {} finally {
       enterPageController.clear();
+      showGoButton = false;
     }
   }
 
