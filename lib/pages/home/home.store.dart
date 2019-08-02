@@ -95,7 +95,9 @@ abstract class _HomeStore with Store {
   /// 获取api数据
   Future<ImagesDto> getImages() async {
     try {
-      var r = await http.get(apiUrl, headers: headers);
+      var r = await http
+          .get(apiUrl, headers: headers)
+          .timeout(Duration(seconds: 4));
       if (r.statusCode == HttpStatus.ok) {
         return ImagesDto.fromJson(r.body);
       } else {

@@ -30,39 +30,37 @@ class _HomePageState extends State<HomePage> {
           Observer(
             builder: (_) => store.channelNameIn.isEmpty
                 ? NotTags()
-                : Observer(
-                    builder: (_) => FutureBuilder(
-                      future: store.getImages(),
-                      builder: (context, AsyncSnapshot<ImagesDto> snap) {
-                        ConnectionState status = snap.connectionState;
+                : FutureBuilder(
+                    future: store.getImages(),
+                    builder: (context, AsyncSnapshot<ImagesDto> snap) {
+                      ConnectionState status = snap.connectionState;
 
-                        if (status == ConnectionState.waiting) {
-                          return _buildLoading(context);
+                      if (status == ConnectionState.waiting) {
+                        return _buildLoading(context);
+                      }
+
+                      if (status == ConnectionState.done) {
+                        if (snap.hasError) {
+                          return _buildError(snap, context);
                         }
+                        ImagesDto body = snap.data;
+                        int lastPage = store.getLstPage(body.meta.total);
+                        return Column(
+                          children: [
+                            /// images list
+                            ..._buildListImages(body.data),
 
-                        if (status == ConnectionState.done) {
-                          if (snap.hasError) {
-                            return _buildError(snap, context);
-                          }
-                          ImagesDto body = snap.data;
-                          int lastPage = store.getLstPage(body.meta.total);
-                          return Column(
-                            children: [
-                              /// images list
-                              ..._buildListImages(body.data),
+                            /// split button list
+                            _buildSplitSection(context, lastPage),
 
-                              /// split button list
-                              _buildSplitSection(context, lastPage),
+                            /// go to page
+                            _buildInputPage(context, lastPage),
+                          ],
+                        );
+                      }
 
-                              /// go to page
-                              _buildInputPage(context, lastPage),
-                            ],
-                          );
-                        }
-
-                        return SizedBox();
-                      },
-                    ),
+                      return SizedBox();
+                    },
                   ),
           ),
         ],
@@ -232,15 +230,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   Padding _buildError(AsyncSnapshot<ImagesDto> snap, BuildContext context) {
+    Color accentColor = Theme.of(context).accentColor;
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Center(
-        child: Text(
-          '${snap.error}',
-          style: Theme.of(context).textTheme.body1.copyWith(
-                color: Theme.of(context).accentColor,
-              ),
-        ),
+      child: Column(
+        children: <Widget>[
+          Center(
+            child: Text(
+              '${snap.error}',
+              style: Theme.of(context)
+                  .textTheme
+                  .body1
+                  .copyWith(color: accentColor),
+            ),
+          ),
+          RaisedButton(
+            color: accentColor,
+            textColor: Colors.white,
+            onPressed: () {
+              setState(() {});
+            },
+            child: Text('Reload'),
+          ),
+        ],
       ),
     );
   }
