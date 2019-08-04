@@ -1,38 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:himage/shared/widgets/image_network.dart';
 
-class HImage extends StatelessWidget {
+class HImage extends StatefulWidget {
   final String src;
 
   const HImage(
     this.src, {
     Key key,
   }) : super(key: key);
+
+  @override
+  _HImageState createState() => _HImageState();
+}
+
+class _HImageState extends State<HImage> {
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      src,
-      fit: BoxFit.contain,
-      loadingBuilder: _buildImageLoading,
-    );
-  }
-
-  Widget _buildImageLoading(
-    BuildContext context,
-    Widget child,
-    ImageChunkEvent loadingProgress,
-  ) {
-    if (loadingProgress == null) return child;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(Theme.of(context).accentColor),
-          value: loadingProgress.expectedTotalBytes != null
-              ? loadingProgress.cumulativeBytesLoaded /
-                  loadingProgress.expectedTotalBytes
-              : null,
-        ),
-      ),
+    return ImageNetwork(
+      widget.src,
+      loadingWidget: ImageNetwork.defaultLoadingWidget,
+      loadingBuilder: ImageNetwork.defaultLoadingBuilder,
     );
   }
 }

@@ -11,7 +11,33 @@ part 'home.store.g.dart';
 class HomeStore = _HomeStore with _$HomeStore;
 
 abstract class _HomeStore with Store {
+  _HomeStore() {
+    _init();
+  }
+
+  @action
+  _init() {
+    scrollController.addListener(() {
+      var _offset = 20;
+      if (scrollController.offset > _offset) {
+        _setOffset(scrollController.offset - _offset);
+      }
+    });
+  }
+
+  @action
+  void _setOffset(os) {
+    offset = os;
+  }
+
   static const INITPAGE = 1;
+
+  final ScrollController scrollController = ScrollController();
+
+  @observable
+  double offset = 0.0;
+
+  final tagDuration = const Duration(milliseconds: 400);
 
   /// 每页有24张图
   final int pageOffset = 24;
@@ -96,6 +122,7 @@ abstract class _HomeStore with Store {
 
   /// 获取api数据
   Future<ImagesDto> getImages() async {
+    // return Future.error('test');
     try {
       var r = await http
           .get(apiUrl, headers: headers)

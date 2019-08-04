@@ -1,9 +1,9 @@
 name: himage
 description: himage
-version: 0.3.1
+version: 0.4.0
 
 environment:
-  sdk: ">=2.2.2 <3.0.0"
+  sdk: '>=2.2.2 <3.0.0'
 
 dependencies:
   flutter:
@@ -19,6 +19,8 @@ dependencies:
   path:
   mobx:
   flutter_mobx:
+  flutter_image:
+  dio:
 
 dev_dependencies:
   flutter_test:
@@ -32,13 +34,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #  - images/a_dot_burr.jpeg
+  assets:
+    - assets/images/bg.jpg
   #  - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

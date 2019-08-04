@@ -24,44 +24,69 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      body: ListView(
-        children: <Widget>[
-          _buildTags(),
+      body: Stack(
+        children: [
           Observer(
-            builder: (_) => store.channelNameIn.isEmpty
-                ? NotTags()
-                : FutureBuilder(
-                    future: store.getImages(),
-                    builder: (context, AsyncSnapshot<ImagesDto> snap) {
-                      ConnectionState status = snap.connectionState;
+            builder: (_) => Positioned(
+              right: 0,
+              top: -store.offset,
+              child: Opacity(
+                opacity: 0.5,
+                child: Image.asset(
+                  'assets/images/bg.jpg',
+                  height: MediaQuery.of(context).size.height / 2,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          ListView(
+            controller: store.scrollController,
+            children: <Widget>[
+              _buildTags(),
+              Observer(
+                builder: (_) => store.channelNameIn.isEmpty
+                    ? NotTags()
+                    : FutureBuilder(
+                        future: store.getImages(),
+                        builder: (context, AsyncSnapshot<ImagesDto> snap) {
+                          ConnectionState status = snap.connectionState;
 
-                      if (status == ConnectionState.waiting) {
-                        return _buildLoading(context);
-                      }
+                          if (status == ConnectionState.waiting) {
+                            return _buildLoading(context);
+                          }
 
-                      if (status == ConnectionState.done) {
-                        if (snap.hasError) {
-                          return _buildError(snap, context);
-                        }
-                        ImagesDto body = snap.data;
-                        int lastPage = store.getLstPage(body.meta.total);
-                        return Column(
-                          children: [
-                            /// images list
-                            ..._buildListImages(body.data),
+                          if (status == ConnectionState.done) {
+                            if (snap.hasError) {
+                              return _buildError(snap, context);
+                            }
+                            ImagesDto body = snap.data;
+                            int lastPage = store.getLstPage(body.meta.total);
+                            return Column(
+                              children: [
+                                /// split button list
+                                _buildSplitSection(context, lastPage),
 
-                            /// split button list
-                            _buildSplitSection(context, lastPage),
+                                /// go to page
+                                _buildInputPage(context, lastPage),
 
-                            /// go to page
-                            _buildInputPage(context, lastPage),
-                          ],
-                        );
-                      }
+                                /// images list
+                                ..._buildListImages(body.data),
 
-                      return SizedBox();
-                    },
-                  ),
+                                /// split button list
+                                _buildSplitSection(context, lastPage),
+
+                                /// go to page
+                                _buildInputPage(context, lastPage),
+                              ],
+                            );
+                          }
+
+                          return SizedBox();
+                        },
+                      ),
+              ),
+            ],
           ),
         ],
       ),
@@ -351,7 +376,8 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Container(
+                    AnimatedContainer(
+                      duration: store.tagDuration,
                       margin: EdgeInsets.symmetric(horizontal: 8.0),
                       width: 10,
                       height: 10,
@@ -367,12 +393,13 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    Text(
-                      '#${channelName.text}',
+                    AnimatedDefaultTextStyle(
+                      duration: store.tagDuration,
                       style: TextStyle(
                         color: Colors.white
                             .withOpacity(channelName.active ? 1.0 : 0.5),
                       ),
+                      child: Text('#${channelName.text}'),
                     ),
                   ],
                 ),
