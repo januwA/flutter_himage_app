@@ -1,6 +1,6 @@
 name: himage
 description: himage
-version: 0.4.1
+version: 0.4.2
 
 environment:
   sdk: '>=2.2.2 <3.0.0'
@@ -20,6 +20,7 @@ dependencies:
   mobx:
   flutter_mobx:
   flutter_imagenetwork:
+  video_box:
 
 dev_dependencies:
   flutter_test:

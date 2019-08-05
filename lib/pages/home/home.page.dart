@@ -7,6 +7,9 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:himage/shared/widgets/bg_image.dart';
 import 'package:himage/shared/widgets/goto_Input.dart';
 import 'package:himage/shared/widgets/himage.dart';
+import 'package:video_box/video.store.dart';
+import 'package:video_box/video_box.dart';
+import 'package:path/path.dart' as path;
 
 class HomePage extends StatefulWidget {
   @override
@@ -42,43 +45,34 @@ class _HomePageState extends State<HomePage> {
             children: <Widget>[
               _buildTags(),
               Observer(
-                builder: (_) => store.channelNameIn.isEmpty
-                    ? NotTags()
-                    : FutureBuilder(
-                        future: store.getImages(),
-                        builder: (context, AsyncSnapshot<ImagesDto> snap) {
-                          ConnectionState status = snap.connectionState;
+                builder: (_) {
+                  if (store.channelNameIn.isEmpty) {
+                    return NotTags();
+                  }
 
-                          if (status == ConnectionState.waiting) {
-                            return _buildLoading(context);
-                          }
+                  if (store.loading) {
+                    return _buildLoading();
+                  }
 
-                          if (status == ConnectionState.done) {
-                            if (snap.hasError) {
-                              return _buildError(snap, context);
-                            }
-                            ImagesDto body = snap.data;
-                            int lastPage = store.getLstPage(body.meta.total);
-                            return Column(
-                              children: [
-                                /// split button list
-                                _buildSplitSection(context, lastPage),
+                  if (store.error != null) {
+                    return _buildError();
+                  }
+                  return Column(
+                    children: [
+                      /// split button list
+                      _buildSplitSection(),
 
-                                /// images list
-                                ..._buildListImages(body.data),
+                      /// images list
+                      ..._buildListImages(),
 
-                                /// split button list
-                                _buildSplitSection(context, lastPage),
+                      /// split button list
+                      _buildSplitSection(),
 
-                                /// go to page
-                                _buildInputPage(context, lastPage),
-                              ],
-                            );
-                          }
-
-                          return SizedBox();
-                        },
-                      ),
+                      /// go to page
+                      _buildInputPage(),
+                    ],
+                  );
+                },
               ),
             ],
           ),
@@ -87,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSplitSection(BuildContext context, int lastPage) {
+  Widget _buildSplitSection() {
     return Observer(
       builder: (_) => Padding(
         padding: const EdgeInsets.all(8.0),
@@ -95,7 +89,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: _getSplitPageButtons(
             context: context,
-            lastPage: lastPage,
+            lastPage: store.lastPage,
           ),
         ),
       ),
@@ -224,14 +218,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<Widget> _buildListImages(BuiltList<DataDto> images) {
+  List<Widget> _buildListImages() {
+    var images = store.images;
     return images.map((DataDto item) {
+      Widget child;
+      String extension = path.extension(item.canonicalUrl);
+      if (extension == '.mp4' || extension == '.webm') {
+        Video video = Video(
+          store: VideoStore(
+              videoDataSource: VideoDataSource.network(item.canonicalUrl)),
+        );
+        store.videos.add(video);
+        child = video.videoBox;
+      } else {
+        child = HImage(item.canonicalUrl);
+      }
       return GestureDetector(
         onTap: () => toFullScreenPage(
           images: images,
           initialPage: images.indexOf(item),
         ),
-        child: HImage(item.canonicalUrl),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: child,
+        ),
       );
     }).toList();
   }
@@ -251,7 +261,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Padding _buildLoading(BuildContext context) {
+  Padding _buildLoading() {
     Color color = Theme.of(context).accentColor;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -271,7 +281,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Padding _buildError(AsyncSnapshot<ImagesDto> snap, BuildContext context) {
+  Padding _buildError() {
     Color accentColor = Theme.of(context).accentColor;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -279,7 +289,7 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           Center(
             child: Text(
-              '${snap.error}',
+              '${store.error}',
               style: Theme.of(context)
                   .textTheme
                   .body1
@@ -289,9 +299,7 @@ class _HomePageState extends State<HomePage> {
           RaisedButton(
             color: accentColor,
             textColor: Colors.white,
-            onPressed: () {
-              setState(() {});
-            },
+            onPressed: store.reload,
             child: Text('Reload'),
           ),
         ],
@@ -300,10 +308,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 跳转到输入的page
-  Widget _buildInputPage(
-    BuildContext context,
-    int lastPage,
-  ) {
+  Widget _buildInputPage() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
