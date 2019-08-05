@@ -4,6 +4,8 @@ import 'package:himage/dto/images/images.dto.dart';
 import 'package:himage/pages/full_screen/full_screen.page.dart';
 import 'package:himage/pages/home/home.store.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:himage/shared/widgets/bg_image.dart';
+import 'package:himage/shared/widgets/goto_Input.dart';
 import 'package:himage/shared/widgets/himage.dart';
 
 class HomePage extends StatefulWidget {
@@ -29,14 +31,9 @@ class _HomePageState extends State<HomePage> {
           Observer(
             builder: (_) => Positioned(
               right: 0,
-              top: -store.offset,
-              child: Opacity(
-                opacity: 0.5,
-                child: Image.asset(
-                  'assets/images/bg.jpg',
-                  height: MediaQuery.of(context).size.height / 2,
-                  fit: BoxFit.cover,
-                ),
+              child: Transform.translate(
+                offset: Offset(0, -store.dy),
+                child: BgImage(),
               ),
             ),
           ),
@@ -66,9 +63,6 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 /// split button list
                                 _buildSplitSection(context, lastPage),
-
-                                /// go to page
-                                _buildInputPage(context, lastPage),
 
                                 /// images list
                                 ..._buildListImages(body.data),
@@ -306,7 +300,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 跳转到输入的page
-  Widget _buildInputPage(BuildContext context, int lastPage) {
+  Widget _buildInputPage(
+    BuildContext context,
+    int lastPage,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -322,29 +319,9 @@ class _HomePageState extends State<HomePage> {
           SizedBox(width: 10),
           SizedBox(
             width: 100,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Color(0xff17181a),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: TextField(
-                controller: store.enterPageController,
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.done,
-                onChanged: store.inputChange,
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'PAGE #',
-                  hintStyle: TextStyle(color: Colors.white60),
-                  border: InputBorder.none,
-                ),
-                textAlign: TextAlign.center,
-                cursorColor: Theme.of(context).accentColor,
-                cursorWidth: 2,
-                cursorRadius: Radius.circular(4.0),
-              ),
+            child: GoToInput(
+              controller: store.enterPageController,
+              onChanged: store.inputChange,
             ),
           ),
           SizedBox(width: 10),

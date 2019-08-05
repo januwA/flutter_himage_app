@@ -134,13 +134,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.1"
-  cookie_jar:
-    dependency: transitive
-    description:
-      name: cookie_jar
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.1"
   crypto:
     dependency: transitive
     description:
@@ -169,13 +162,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.2.9"
-  dio:
-    dependency: "direct main"
-    description:
-      name: dio
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.1.13"
   fixnum:
     dependency: transitive
     description:
@@ -195,13 +181,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.9"
-  flutter_image:
+  flutter_imagenetwork:
     dependency: "direct main"
     description:
-      name: flutter_image
+      name: flutter_imagenetwork
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.0"
+    version: "0.1.1"
   flutter_mobx:
     dependency: "direct main"
     description:
@@ -529,4 +515,4 @@ packages:
     version: "2.1.16"
 sdks:
   dart: ">=2.3.0 <3.0.0"
-  flutter: ">=1.5.9-pre.94 <2.0.0"
+  flutter: ">=0.1.4 <2.0.0"

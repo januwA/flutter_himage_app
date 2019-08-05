@@ -18,16 +18,13 @@ abstract class _HomeStore with Store {
   @action
   _init() {
     scrollController.addListener(() {
-      var _offset = 20;
-      if (scrollController.offset > _offset) {
-        _setOffset(scrollController.offset - _offset);
-      }
+      _setOffset(scrollController.offset);
     });
   }
 
   @action
-  void _setOffset(os) {
-    offset = os;
+  void _setOffset(y) {
+    dy = y;
   }
 
   static const INITPAGE = 1;
@@ -35,7 +32,7 @@ abstract class _HomeStore with Store {
   final ScrollController scrollController = ScrollController();
 
   @observable
-  double offset = 0.0;
+  double dy = 0.0;
 
   final tagDuration = const Duration(milliseconds: 400);
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:himage/shared/widgets/image_network.dart';
+import 'package:flutter_imagenetwork/flutter_imagenetwork.dart';
 
 class HImage extends StatefulWidget {
   final String src;
@@ -18,8 +18,10 @@ class _HImageState extends State<HImage> {
   Widget build(BuildContext context) {
     return ImageNetwork(
       widget.src,
+      fit: BoxFit.contain,
       loadingWidget: ImageNetwork.defaultLoadingWidget,
       loadingBuilder: ImageNetwork.defaultLoadingBuilder,
+      errorBuilder: ImageNetwork.defaultErrorBuilder,
     );
   }
 }
