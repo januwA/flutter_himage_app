@@ -10,37 +10,20 @@ import 'package:video_box/video_box.dart';
 
 part 'home.store.g.dart';
 
+const INITPAGE = 1;
+const PAGEOFFSET = 24;
+const TIMEOUT = Duration(seconds: 10);
+const double INITSCALE = 1.0;
+
 class HomeStore = _HomeStore with _$HomeStore;
 
 abstract class _HomeStore with Store {
-  static const INITPAGE = 1;
-  static const PAGEOFFSET = 24;
-  static const TIMEOUT = Duration(seconds: 10);
-
-  final ScrollController scrollController = ScrollController();
-  final tagDuration = const Duration(milliseconds: 400);
-  final TextEditingController enterPageController = TextEditingController();
-  String get goPage => enterPageController.text;
-
-  final Map<String, String> headers = {
-    HttpHeaders.userAgentHeader:
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
-    'x-directive': 'api',
-    'x-session-token': '',
-    'x-signature': '',
-    'x-time': '0',
-  };
-
   _HomeStore() {
     _init();
   }
 
   @action
   Future<void> _init() async {
-    scrollController.addListener(() {
-      _setDy(scrollController.offset);
-    });
-
     _getImages();
   }
 
@@ -61,7 +44,41 @@ abstract class _HomeStore with Store {
       error = e;
       loading = false;
     }
+
+    /// 每次获取数据代表数据的重载
+    /// 无论新的请求成功还是失败
+    /// 清理掉视频
+    for (var v in videos) {
+      v.dispose();
+    }
   }
+
+  final ScrollController scrollController = ScrollController();
+  final tagDuration = const Duration(milliseconds: 400);
+  final TextEditingController enterPageController = TextEditingController();
+
+  final Map<String, String> headers = {
+    HttpHeaders.userAgentHeader:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    'x-directive': 'api',
+    'x-session-token': '',
+    'x-signature': '',
+    'x-time': '0',
+  };
+
+  @observable
+  double scale = INITSCALE;
+  final double scaleMin = 0.2;
+  final double scaleOffset = 300;
+
+  @action
+  void setScale(y) {}
+
+  @observable
+  bool isDisplayUpButton = false;
+  final double isDisplayUpButtonOffset = 100;
+
+  String get goPage => enterPageController.text;
 
   List<Video> videos = [];
 
@@ -171,13 +188,43 @@ abstract class _HomeStore with Store {
     _getImages();
   }
 
+  void scrollUp() {
+    if (!isDisplayUpButton) return;
+    scrollController.animateTo(
+      scrollController.initialScrollOffset,
+      duration: const Duration(seconds: 1),
+      curve: Curves.easeIn,
+    );
+  }
+
+  @action
+  bool onNotification(Notification notification) {
+    if (notification is ScrollUpdateNotification && notification.depth == 0) {
+      // dy
+      dy = scrollController.offset;
+
+      // isDisplayUpButton
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent - isDisplayUpButtonOffset) {
+        isDisplayUpButton = true;
+      } else {
+        isDisplayUpButton = false;
+      }
+
+      // scale
+      double newScale = INITSCALE - scrollController.offset / scaleOffset;
+      if (newScale != scaleMin) {
+        scale = newScale;
+      }
+      return true;
+    }
+    return false;
+  }
+
   @override
   void dispose() {
     enterPageController.dispose();
     super.dispose();
-    for (var v in videos) {
-      v.dispose();
-    }
   }
 }
 

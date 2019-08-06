@@ -60,26 +60,31 @@ class _FullScreenPageState extends State<FullScreenPage> {
                       top: 0,
                       child: SizedBox(
                         width: width,
-                        child: Row(
-                          children: <Widget>[
-                            BackButton(color: accentColor),
-                            Expanded(
-                              child: Text(
-                                store.image.filename,
-                                style:
-                                    Theme.of(context).textTheme.body1.copyWith(
-                                          color: Colors.white,
-                                        ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                        child: Container(
+                          color: Theme.of(context).primaryColor.withAlpha(100),
+                          child: Row(
+                            children: <Widget>[
+                              BackButton(color: accentColor),
+                              Expanded(
+                                child: Text(
+                                  store.image.filename,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .body1
+                                      .copyWith(
+                                        color: Colors.white,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              color: accentColor,
-                              icon: Icon(Icons.file_download),
-                              onPressed: store.saveImage,
-                            ),
-                          ],
+                              IconButton(
+                                color: accentColor,
+                                icon: Icon(Icons.file_download),
+                                onPressed: store.saveImage,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     )

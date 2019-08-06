@@ -9,7 +9,6 @@ import 'package:himage/shared/widgets/goto_Input.dart';
 import 'package:himage/shared/widgets/himage.dart';
 import 'package:video_box/video.store.dart';
 import 'package:video_box/video_box.dart';
-import 'package:path/path.dart' as path;
 import 'package:video_player/video_player.dart';
 
 class HomePage extends StatefulWidget {
@@ -30,54 +29,73 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      body: Stack(
-        children: [
-          Observer(
-            builder: (_) => Positioned(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(
               right: 0,
-              child: Transform.translate(
-                offset: Offset(0, -store.dy),
-                child: BgImage(),
+              child: Observer(
+                builder: (_) => Transform.translate(
+                  offset: Offset(0, -store.dy),
+                  child: BgImage(),
+                ),
               ),
             ),
-          ),
-          ListView(
-            controller: store.scrollController,
-            children: <Widget>[
-              _buildTags(),
-              Observer(
-                builder: (_) {
-                  if (store.channelNameIn.isEmpty) {
-                    return NotTags();
-                  }
+            NotificationListener(
+              onNotification: store.onNotification,
+              child: CustomScrollView(
+                controller: store.scrollController,
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: _buildTags()),
+                  Observer(
+                    builder: (_) {
+                      if (store.channelNameIn.isEmpty) {
+                        return SliverToBoxAdapter(child: NotTags());
+                      }
 
-                  if (store.loading) {
-                    return _buildLoading();
-                  }
+                      if (store.loading) {
+                        return SliverToBoxAdapter(child: _buildLoading());
+                      }
 
-                  if (store.error != null) {
-                    return _buildError();
-                  }
-                  return Column(
-                    children: [
-                      /// split button list
-                      _buildSplitSection(),
+                      if (store.error != null) {
+                        return SliverToBoxAdapter(child: _buildError());
+                      }
+                      return SliverList(
+                        delegate: SliverChildListDelegate(
+                          [
+                            /// split button list
+                            _buildSplitSection(),
 
-                      /// images list
-                      ..._buildListImages(),
+                            /// images list
+                            ..._buildListImages(),
 
-                      /// split button list
-                      _buildSplitSection(),
+                            /// split button list
+                            _buildSplitSection(),
 
-                      /// go to page
-                      _buildInputPage(),
-                    ],
-                  );
-                },
+                            /// go to page
+                            _buildInputPage(),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: Observer(
+        builder: (_) {
+          return AnimatedOpacity(
+            opacity: store.isDisplayUpButton ? 1 : 0,
+            duration: Duration(milliseconds: 400),
+            child: FloatingActionButton(
+              child: Icon(Icons.arrow_upward),
+              onPressed: store.scrollUp,
+            ),
+          );
+        },
       ),
     );
   }
@@ -223,10 +241,11 @@ class _HomePageState extends State<HomePage> {
     var images = store.images;
     return images.map((DataDto item) {
       Widget child;
-      String extension = path.extension(item.canonicalUrl);
-      if (extension == '.mp4' || extension == '.webm') {
+      String extension = item.extension;
+      if (extension == 'mp4' || extension == 'webm') {
         Video video = Video(
-          store: VideoStore(source: VideoPlayerController.network(item.canonicalUrl)),
+          store: VideoStore(
+              source: VideoPlayerController.network(item.canonicalUrl)),
         );
         store.videos.add(video);
         child = video.videoBox;
@@ -350,46 +369,49 @@ class _HomePageState extends State<HomePage> {
   /// 显示tags ui
   Widget _buildTags() {
     return Observer(
-      builder: (_) => Wrap(
-        children: <Widget>[
-          for (var channelName in store.channelNames)
-            Observer(
-              builder: (_) => FlatButton(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    AnimatedContainer(
-                      duration: store.tagDuration,
-                      margin: EdgeInsets.symmetric(horizontal: 8.0),
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: channelName.active
-                            ? channelName.color
-                            : Colors.white.withOpacity(0),
-                        shape: BoxShape.circle,
-                        border: Border.all(
+      builder: (_) => Transform.scale(
+        scale: store.scale,
+        child: Wrap(
+          children: <Widget>[
+            for (var channelName in store.channelNames)
+              Observer(
+                builder: (_) => FlatButton(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      AnimatedContainer(
+                        duration: store.tagDuration,
+                        margin: EdgeInsets.symmetric(horizontal: 8.0),
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
                           color: channelName.active
                               ? channelName.color
-                              : Colors.white.withOpacity(0.5),
+                              : Colors.white.withOpacity(0),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: channelName.active
+                                ? channelName.color
+                                : Colors.white.withOpacity(0.5),
+                          ),
                         ),
                       ),
-                    ),
-                    AnimatedDefaultTextStyle(
-                      duration: store.tagDuration,
-                      style: TextStyle(
-                        color: Colors.white
-                            .withOpacity(channelName.active ? 1.0 : 0.5),
+                      AnimatedDefaultTextStyle(
+                        duration: store.tagDuration,
+                        style: TextStyle(
+                          color: Colors.white
+                              .withOpacity(channelName.active ? 1.0 : 0.5),
+                        ),
+                        child: Text('#${channelName.text}'),
                       ),
-                      child: Text('#${channelName.text}'),
-                    ),
-                  ],
+                    ],
+                  ),
+                  splashColor: Colors.white30,
+                  onPressed: () => store.selectTag(channelName),
                 ),
-                splashColor: Colors.white30,
-                onPressed: () => store.selectTag(channelName),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

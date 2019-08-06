@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_imagenetwork/flutter_imagenetwork.dart';
+import 'package:himage/shared/widgets/ajanuw_image.dart';
 
 class HImage extends StatefulWidget {
   final String src;
