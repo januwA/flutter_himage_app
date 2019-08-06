@@ -16,12 +16,12 @@ class HImage extends StatefulWidget {
 class _HImageState extends State<HImage> {
   @override
   Widget build(BuildContext context) {
-    return ImageNetwork(
-      widget.src,
+    return AjanuwImage(
+      image: AjanuwNetworkImage(widget.src),
       fit: BoxFit.contain,
-      loadingWidget: ImageNetwork.defaultLoadingWidget,
-      loadingBuilder: ImageNetwork.defaultLoadingBuilder,
-      errorBuilder: ImageNetwork.defaultErrorBuilder,
+      loadingWidget: AjanuwImage.defaultLoadingWidget,
+      loadingBuilder: AjanuwImage.defaultLoadingBuilder,
+      errorBuilder: AjanuwImage.defaultErrorBuilder,
     );
   }
 }

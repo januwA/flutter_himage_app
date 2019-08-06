@@ -15,6 +15,7 @@ class HomeStore = _HomeStore with _$HomeStore;
 abstract class _HomeStore with Store {
   static const INITPAGE = 1;
   static const PAGEOFFSET = 24;
+  static const TIMEOUT = Duration(seconds: 10);
 
   final ScrollController scrollController = ScrollController();
   final tagDuration = const Duration(milliseconds: 400);
@@ -48,9 +49,7 @@ abstract class _HomeStore with Store {
   Future<void> _getImages() async {
     loading = true;
     try {
-      var r = await http
-          .get(apiUrl, headers: headers)
-          .timeout(Duration(seconds: 4));
+      var r = await http.get(apiUrl, headers: headers).timeout(TIMEOUT);
       if (r.statusCode == HttpStatus.ok) {
         body = ImagesDto.fromJson(r.body);
         error = null;

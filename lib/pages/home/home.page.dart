@@ -10,6 +10,7 @@ import 'package:himage/shared/widgets/himage.dart';
 import 'package:video_box/video.store.dart';
 import 'package:video_box/video_box.dart';
 import 'package:path/path.dart' as path;
+import 'package:video_player/video_player.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -225,8 +226,7 @@ class _HomePageState extends State<HomePage> {
       String extension = path.extension(item.canonicalUrl);
       if (extension == '.mp4' || extension == '.webm') {
         Video video = Video(
-          store: VideoStore(
-              videoDataSource: VideoDataSource.network(item.canonicalUrl)),
+          store: VideoStore(source: VideoPlayerController.network(item.canonicalUrl)),
         );
         store.videos.add(video);
         child = video.videoBox;
