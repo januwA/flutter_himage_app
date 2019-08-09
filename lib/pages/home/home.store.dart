@@ -76,7 +76,7 @@ abstract class _HomeStore with Store {
 
   @observable
   bool isDisplayUpButton = false;
-  final double isDisplayUpButtonOffset = 100;
+  final double isDisplayUpButtonOffset = 300;
 
   String get goPage => enterPageController.text;
 
@@ -203,18 +203,17 @@ abstract class _HomeStore with Store {
       // dy
       dy = scrollController.offset;
 
-      // isDisplayUpButton
-      if (scrollController.position.pixels >=
-          scrollController.position.maxScrollExtent - isDisplayUpButtonOffset) {
-        isDisplayUpButton = true;
-      } else {
-        isDisplayUpButton = false;
-      }
-
       // scale
       double newScale = INITSCALE - scrollController.offset / scaleOffset;
       if (newScale != scaleMin) {
         scale = newScale;
+      }
+
+      // display floatingActionButton
+      if (scrollController.position.extentAfter <= isDisplayUpButtonOffset) {
+        isDisplayUpButton = true;
+      } else {
+        if (isDisplayUpButton) isDisplayUpButton = false;
       }
       return true;
     }

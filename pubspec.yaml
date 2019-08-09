@@ -1,6 +1,6 @@
 name: himage
 description: himage
-version: 0.4.4
+version: 0.4.5
 
 environment:
   sdk: '>=2.2.2 <3.0.0'
