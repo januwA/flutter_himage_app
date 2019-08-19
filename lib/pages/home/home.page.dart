@@ -7,6 +7,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:himage/shared/widgets/bg_image.dart';
 import 'package:himage/shared/widgets/goto_Input.dart';
 import 'package:himage/shared/widgets/himage.dart';
+import 'package:himage/store/main.store.dart';
 import 'package:video_box/video.store.dart';
 import 'package:video_box/video_box.dart';
 import 'package:video_player/video_player.dart';
@@ -20,6 +21,11 @@ class _HomePageState extends State<HomePage> {
   final store = HomeStore();
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void dispose() {
     store.dispose();
     super.dispose();
@@ -27,6 +33,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    mainStore.version.updateApp(context);
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body: SafeArea(
