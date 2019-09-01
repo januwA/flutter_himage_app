@@ -6,7 +6,7 @@ import 'package:himage/dto/images/images.dto.dart';
 import 'package:mobx/mobx.dart';
 import 'package:random_color/random_color.dart';
 import 'package:http/http.dart' as http;
-import 'package:video_box/video_box.dart';
+import 'package:video_box/video.controller.dart';
 
 part 'home.store.g.dart';
 
@@ -76,11 +76,10 @@ abstract class _HomeStore with Store {
 
   @observable
   bool isDisplayUpButton = false;
-  final double isDisplayUpButtonOffset = 300;
 
   String get goPage => enterPageController.text;
 
-  List<Video> videos = [];
+  List<VideoController> videos = [];
 
   @observable
   bool loading = true;
@@ -210,10 +209,10 @@ abstract class _HomeStore with Store {
       }
 
       // display floatingActionButton
-      if (scrollController.position.extentAfter <= isDisplayUpButtonOffset) {
+      if (scrollController.position.extentBefore > 400) {
         isDisplayUpButton = true;
       } else {
-        if (isDisplayUpButton) isDisplayUpButton = false;
+        isDisplayUpButton = false;
       }
       return true;
     }

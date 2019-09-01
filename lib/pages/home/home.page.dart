@@ -8,7 +8,7 @@ import 'package:himage/shared/widgets/bg_image.dart';
 import 'package:himage/shared/widgets/goto_Input.dart';
 import 'package:himage/shared/widgets/himage.dart';
 import 'package:himage/store/main.store.dart';
-import 'package:video_box/video.store.dart';
+import 'package:video_box/video.controller.dart';
 import 'package:video_box/video_box.dart';
 import 'package:video_player/video_player.dart';
 
@@ -94,13 +94,17 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: Observer(
         builder: (_) {
-          return AnimatedOpacity(
-            opacity: store.isDisplayUpButton ? 1 : 0,
-            duration: Duration(milliseconds: 400),
-            child: FloatingActionButton(
-              child: Icon(Icons.arrow_upward),
-              onPressed: store.scrollUp,
-            ),
+          return AnimatedSwitcher(
+            duration: kThemeAnimationDuration,
+            child: store.isDisplayUpButton
+                ? Opacity(
+                    opacity: 0.4,
+                    child: FloatingActionButton(
+                      child: Icon(Icons.arrow_upward),
+                      onPressed: store.scrollUp,
+                    ),
+                  )
+                : SizedBox(),
           );
         },
       ),
@@ -250,12 +254,12 @@ class _HomePageState extends State<HomePage> {
       Widget child;
       String extension = item.extension;
       if (extension == 'mp4' || extension == 'webm') {
-        Video video = Video(
-          store: VideoStore(
-              source: VideoPlayerController.network(item.canonicalUrl)),
+        VideoController vc = VideoController(
+          source: VideoPlayerController.network(item.canonicalUrl),
         );
-        store.videos.add(video);
-        child = video.videoBox;
+
+        store.videos.add(vc);
+        child = VideoBox(controller: vc);
       } else {
         child = HImage(item.canonicalUrl);
       }
@@ -264,10 +268,7 @@ class _HomePageState extends State<HomePage> {
           images: images,
           initialPage: images.indexOf(item),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: child,
-        ),
+        child: child,
       );
     }).toList();
   }
