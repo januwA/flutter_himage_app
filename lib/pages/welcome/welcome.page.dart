@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:himage/pages/home/home.page.dart';
 import 'package:gradient_text/gradient_text.dart';
 
@@ -9,6 +10,24 @@ class WelcomePage extends StatefulWidget {
 }
 
 class WwelcomePageState extends State<WelcomePage> {
+
+  _toHomePage() {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIOverlays([]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,10 +102,7 @@ class WwelcomePageState extends State<WelcomePage> {
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 color: Theme.of(context).accentColor,
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => HomePage()));
-                },
+                onPressed: _toHomePage,
                 child: Text('Get Start'),
               ),
             ),
