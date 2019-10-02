@@ -71,9 +71,6 @@ abstract class _HomeStore with Store {
   final double scaleMin = 0.2;
   final double scaleOffset = 300;
 
-  @action
-  void setScale(y) {}
-
   @observable
   bool isDisplayUpButton = false;
 
@@ -179,7 +176,7 @@ abstract class _HomeStore with Store {
   }
 
   @action
-  void _setDy(y) {
+  void _setDy(double y) {
     dy = y;
   }
 
