@@ -50,44 +50,72 @@ class _HomePageState extends State<HomePage> {
             ),
             NotificationListener(
               onNotification: store.onNotification,
-              child: CustomScrollView(
-                controller: store.scrollController,
-                slivers: <Widget>[
-                  SliverToBoxAdapter(child: _buildTags()),
-                  Observer(
-                    builder: (_) {
-                      if (store.channelNameIn.isEmpty) {
-                        return SliverToBoxAdapter(child: NotTags());
-                      }
+              child: Observer(
+                builder: (_) => ListView(
+                  cacheExtent: 30,
+                  controller: store.scrollController,
+                  children: <Widget>[
+                    _buildTags(),
+                    if (store.channelNameIn.isEmpty)
+                      NotTags()
+                    else if (store.loading)
+                      _buildLoading()
+                    else if (store.error != null)
+                      _buildError()
+                    else ...[
+                      // split button list
+                      _buildSplitSection(),
 
-                      if (store.loading) {
-                        return SliverToBoxAdapter(child: _buildLoading());
-                      }
+                      /// images list
+                      ..._buildListImages(),
 
-                      if (store.error != null) {
-                        return SliverToBoxAdapter(child: _buildError());
-                      }
-                      return SliverList(
-                        delegate: SliverChildListDelegate(
-                          [
-                            /// split button list
-                            _buildSplitSection(),
+                      /// split button list
+                      _buildSplitSection(),
 
-                            /// images list
-                            ..._buildListImages(),
-
-                            /// split button list
-                            _buildSplitSection(),
-
-                            /// go to page
-                            _buildInputPage(),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                      /// go to page
+                      _buildInputPage(),
+                    ]
+                  ],
+                ),
               ),
+              // child: CustomScrollView(
+              //   controller: store.scrollController,
+              //   slivers: <Widget>[
+              //     SliverToBoxAdapter(child: _buildTags()),
+              //     Observer(
+              //       builder: (_) {
+              //         if (store.channelNameIn.isEmpty) {
+              //           return SliverToBoxAdapter(child: NotTags());
+              //         }
+
+              //         if (store.loading) {
+              //           return SliverToBoxAdapter(child: _buildLoading());
+              //         }
+
+              //         if (store.error != null) {
+              //           return SliverToBoxAdapter(child: _buildError());
+              //         }
+              //         return SliverList(
+              //           delegate: SliverChildListDelegate(
+              //             [
+              //               /// split button list
+              //               _buildSplitSection(),
+
+              //               /// images list
+              //               ..._buildListImages(),
+
+              //               /// split button list
+              //               _buildSplitSection(),
+
+              //               /// go to page
+              //               _buildInputPage(),
+              //             ],
+              //           ),
+              //         );
+              //       },
+              //     ),
+              //   ],
+              // ),
             ),
           ],
         ),

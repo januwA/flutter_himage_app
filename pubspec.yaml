@@ -21,7 +21,7 @@ dependencies:
   mobx:
   flutter_mobx:
   flutter_imagenetwork: ^0.3.0
-  video_box: ^0.5.2
+  video_box: ^0.5.3
   flutter_github_releases_service: ^0.2.1
 
   # 文字渐变

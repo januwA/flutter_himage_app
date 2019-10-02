@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:himage/dto/images/images.dto.dart';
@@ -16,9 +15,9 @@ abstract class _FullScreenStore with Store {
   @action
   void initState({
     int initialPage,
-    BuiltList<DataDto> images,
+    List<DataDto> images,
   }) {
-    _images = images;
+    this.images = images;
     pageController = PageController(initialPage: initialPage);
     currentPage = initialPage;
 
@@ -28,7 +27,7 @@ abstract class _FullScreenStore with Store {
   }
 
   @observable
-  BuiltList<DataDto> _images;
+  List<DataDto> images;
 
   @observable
   PageController pageController;
@@ -40,7 +39,10 @@ abstract class _FullScreenStore with Store {
   int currentPage;
 
   @computed
-  DataDto get image => _images[currentPage];
+  DataDto get image => images[currentPage];
+
+  @computed
+  String get imageName => image.filename + '.' + image.extension;
 
   @action
   void displayAppbar() {
