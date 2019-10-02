@@ -9,8 +9,11 @@ class FullScreenPage extends StatefulWidget {
   final BuiltList<DataDto> images;
   final int initialPage;
 
-  const FullScreenPage({Key key, this.images, this.initialPage})
-      : super(key: key);
+  const FullScreenPage({
+    Key key,
+    this.images,
+    this.initialPage,
+  }) : super(key: key);
   @override
   _FullScreenPageState createState() => _FullScreenPageState();
 }
@@ -35,11 +38,12 @@ class _FullScreenPageState extends State<FullScreenPage> {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     double width = MediaQuery.of(context).size.width;
-    Color accentColor = Theme.of(context).accentColor;
+    Color accentColor = theme.accentColor;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: theme.primaryColor,
         body: Stack(
           alignment: AlignmentDirectional.center,
           children: [

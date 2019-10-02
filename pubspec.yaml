@@ -3,7 +3,7 @@ description: himage
 version: 0.5.2
 
 environment:
-  sdk: ">=2.2.2 <3.0.0"
+  sdk: '>=2.2.2 <3.0.0'
 
 dependencies:
   flutter:
@@ -12,19 +12,22 @@ dependencies:
   http:
   built_value:
   built_collection:
-  random_color:
-  rxdart:
-  flutter_downloader: ^1.1.9
+  build_resolvers: ^1.1.1
+  random_color: ^1.0.3
+  rxdart: ^0.22.2
+  flutter_downloader: ^1.2.2
   path_provider:
   path:
   mobx:
   flutter_mobx:
-  flutter_imagenetwork: ^0.2.3
-  video_box: ^0.4.0
-  flutter_github_releases_service:
+  flutter_imagenetwork: ^0.3.0
+  video_box: ^0.5.2
+  flutter_github_releases_service: ^0.2.1
 
   # 文字渐变
-  gradient_text:
+  gradient_text: ^1.0.2
+
+  photo_view: ^0.5.0
 
 dev_dependencies:
   flutter_test:
