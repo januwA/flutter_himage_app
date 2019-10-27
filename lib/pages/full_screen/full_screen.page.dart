@@ -1,9 +1,9 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_imagenetwork/flutter_imagenetwork.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:himage/dto/images/images.dto.dart';
 import 'package:himage/pages/full_screen/full_screen.store.dart';
-import 'package:himage/shared/widgets/himage.dart';
 
 class FullScreenPage extends StatefulWidget {
   final BuiltList<DataDto> images;
@@ -59,7 +59,7 @@ class _FullScreenPageState extends State<FullScreenPage> {
             IconButton(
               color: accentColor,
               icon: Icon(Icons.file_download),
-              onPressed: store.saveImage,
+              onPressed: () => store.saveImage(context),
             ),
           ],
         ),
@@ -69,22 +69,16 @@ class _FullScreenPageState extends State<FullScreenPage> {
           controller: store.pageController,
           onPageChanged: store.setCurrentPage,
           children: <Widget>[
-            for (var item in widget.images) HImage(item.canonicalUrl)
+            for (var item in widget.images)
+              AjanuwImage(
+                image: AjanuwNetworkImage(item.canonicalUrl),
+                fit: BoxFit.contain,
+                loadingWidget: AjanuwImage.defaultLoadingWidget,
+                loadingBuilder: AjanuwImage.defaultLoadingBuilder,
+                errorBuilder: AjanuwImage.defaultErrorBuilder,
+              )
           ],
         ),
-
-        // 有点慢
-        // body: PhotoViewGallery.builder(
-        //   pageController: store.pageController,
-        //   itemCount: store.images.length,
-        //   builder: (BuildContext context, int index) {
-        //     return PhotoViewGalleryPageOptions(
-        //       key: ValueKey(store.image.filename + index.toString()),
-        //       imageProvider: NetworkImage(store.image.canonicalUrl),
-        //     );
-        //   },
-        //   onPageChanged: store.setCurrentPage,
-        // ),
       ),
     );
   }

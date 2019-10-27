@@ -1,12 +1,12 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_imagenetwork/flutter_imagenetwork.dart';
 import 'package:himage/dto/images/images.dto.dart';
 import 'package:himage/pages/full_screen/full_screen.page.dart';
 import 'package:himage/pages/home/home.store.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:himage/shared/widgets/bg_image.dart';
 import 'package:himage/shared/widgets/goto_Input.dart';
-import 'package:himage/shared/widgets/himage.dart';
 import 'package:himage/store/main.store.dart';
 import 'package:video_box/video.controller.dart';
 import 'package:video_box/video_box.dart';
@@ -51,71 +51,35 @@ class _HomePageState extends State<HomePage> {
             NotificationListener(
               onNotification: store.onNotification,
               child: Observer(
-                builder: (_) => ListView(
-                  cacheExtent: 30,
+                builder: (_) => SingleChildScrollView(
                   controller: store.scrollController,
-                  children: <Widget>[
-                    _buildTags(),
-                    if (store.channelNameIn.isEmpty)
-                      NotTags()
-                    else if (store.loading)
-                      _buildLoading()
-                    else if (store.error != null)
-                      _buildError()
-                    else ...[
-                      // split button list
-                      _buildSplitSection(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _buildTags(),
+                      if (store.channelNameIn.isEmpty)
+                        NotTags()
+                      else if (store.loading)
+                        _buildLoading()
+                      else if (store.error != null)
+                        _buildError()
+                      else ...[
+                        // split button list
+                        _buildSplitSection(),
 
-                      /// images list
-                      ..._buildListImages(),
+                        /// images list
+                        ..._buildListImages(),
 
-                      /// split button list
-                      _buildSplitSection(),
+                        /// split button list
+                        _buildSplitSection(),
 
-                      /// go to page
-                      _buildInputPage(),
-                    ]
-                  ],
+                        /// go to page
+                        _buildInputPage(),
+                      ]
+                    ],
+                  ),
                 ),
               ),
-              // child: CustomScrollView(
-              //   controller: store.scrollController,
-              //   slivers: <Widget>[
-              //     SliverToBoxAdapter(child: _buildTags()),
-              //     Observer(
-              //       builder: (_) {
-              //         if (store.channelNameIn.isEmpty) {
-              //           return SliverToBoxAdapter(child: NotTags());
-              //         }
-
-              //         if (store.loading) {
-              //           return SliverToBoxAdapter(child: _buildLoading());
-              //         }
-
-              //         if (store.error != null) {
-              //           return SliverToBoxAdapter(child: _buildError());
-              //         }
-              //         return SliverList(
-              //           delegate: SliverChildListDelegate(
-              //             [
-              //               /// split button list
-              //               _buildSplitSection(),
-
-              //               /// images list
-              //               ..._buildListImages(),
-
-              //               /// split button list
-              //               _buildSplitSection(),
-
-              //               /// go to page
-              //               _buildInputPage(),
-              //             ],
-              //           ),
-              //         );
-              //       },
-              //     ),
-              //   ],
-              // ),
             ),
           ],
         ),
@@ -289,7 +253,12 @@ class _HomePageState extends State<HomePage> {
         store.videos.add(vc);
         child = VideoBox(controller: vc);
       } else {
-        child = HImage(item.canonicalUrl);
+        child = AjanuwImage(
+          image: AjanuwNetworkImage(item.canonicalUrl),
+          fit: BoxFit.contain,
+          frameBuilder: AjanuwImage.defaultFrameBuilder,
+          errorBuilder: AjanuwImage.defaultErrorBuilder,
+        );
       }
       return GestureDetector(
         onTap: () => toFullScreenPage(
