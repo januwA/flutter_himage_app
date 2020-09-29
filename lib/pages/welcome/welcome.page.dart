@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:himage/pages/home/home.page.dart';
 import 'package:gradient_text/gradient_text.dart';
+import 'package:himage/pages/webpage.dart';
 
 class WelcomePage extends StatefulWidget {
   static const routeName = '/WelcomePage';
@@ -10,10 +10,13 @@ class WelcomePage extends StatefulWidget {
 }
 
 class WwelcomePageState extends State<WelcomePage> {
-
   _toHomePage() {
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+      MaterialPageRoute(
+        // builder: (BuildContext context) => HomePage(),
+        builder: (BuildContext context) => WebPage(),
+      ),
+    );
   }
 
   @override
@@ -70,7 +73,7 @@ class WwelcomePageState extends State<WelcomePage> {
                       Colors.deepOrange,
                       Colors.pink,
                     ]),
-                    style: Theme.of(context).textTheme.display1.copyWith(
+                    style: Theme.of(context).textTheme.headline4.copyWith(
                           color: Colors.white,
                           wordSpacing: 10,
                           letterSpacing: 1.8,
@@ -84,7 +87,7 @@ class WwelcomePageState extends State<WelcomePage> {
                       Theme.of(context).accentColor,
                       Colors.pink,
                     ]),
-                    style: Theme.of(context).textTheme.title.copyWith(
+                    style: Theme.of(context).textTheme.headline6.copyWith(
                           color: Colors.white,
                         ),
                   ),

@@ -121,16 +121,21 @@ abstract class _HomeStore with Store {
       channelNames.where((c) => c.active).map((c) => c.text).toList();
 
   /// api 地址
-  Uri get apiUrl => Uri(
-        scheme: 'https',
-        host: 'hanime.tv',
-        path: '/api/v3/community_uploads',
-        queryParameters: {
-          "channel_name__in[]": channelNameIn,
-          '__offset': ((page - 1) * PAGEOFFSET).toString(),
-          '__order': 'created_at,DESC'
-        },
-      );
+  Uri get apiUrl {
+    /// https://hr.hanime.tv/api/v8/community_uploads?channel_name__in[]=media&channel_name__in[]=nsfw-general&query_method=offset&__offset=0&loc=https://hanime.tv
+    return Uri(
+      scheme: 'https',
+      host: 'hr.hanime.tv',
+      path: '/api/v8/community_upload',
+      queryParameters: {
+        'channel_name__in[]': channelNameIn,
+        'query_method': 'offset',
+        '__offset': ((page - 1) * PAGEOFFSET).toString(),
+        '__order': 'created_at,DESC',
+        'loc': 'https://hanime.tv'
+      },
+    );
+  }
 
   @action
   void setPage(int np) {
@@ -216,10 +221,8 @@ abstract class _HomeStore with Store {
     return false;
   }
 
-  @override
   void dispose() {
     enterPageController.dispose();
-    super.dispose();
   }
 }
 

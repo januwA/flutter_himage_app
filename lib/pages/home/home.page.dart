@@ -7,7 +7,6 @@ import 'package:himage/pages/home/home.store.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:himage/shared/widgets/bg_image.dart';
 import 'package:himage/shared/widgets/goto_Input.dart';
-import 'package:himage/store/main.store.dart';
 import 'package:video_box/video.controller.dart';
 import 'package:video_box/video_box.dart';
 import 'package:video_player/video_player.dart';
@@ -33,7 +32,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    mainStore.version.updateApp(context);
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body: SafeArea(
@@ -316,7 +314,7 @@ class _HomePageState extends State<HomePage> {
               '${store.error}',
               style: Theme.of(context)
                   .textTheme
-                  .body1
+                  .bodyText2
                   .copyWith(color: accentColor),
             ),
           ),
@@ -433,7 +431,7 @@ class NotTags extends StatelessWidget {
       padding: EdgeInsets.all(14.0),
       child: Text(
         'There are no images for the current page / channel combination!',
-        style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
+        style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
       ),
     );
   }

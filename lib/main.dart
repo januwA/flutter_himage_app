@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:himage/pages/welcome/welcome.page.dart';
+import 'package:himage/pages/webpage.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,7 +13,8 @@ class MyApp extends StatelessWidget {
         primaryColor: Color(0xff303030),
         accentColor: Color(0xfff3c669),
       ),
-      home: WelcomePage(),
+      //home: WelcomePage(),
+      home: WebPage(),
     );
   }
 }
