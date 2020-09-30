@@ -18,14 +18,23 @@ class _WebPageState extends State<WebPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("hanime.tv"),
         actions: <Widget>[NavigationControls(_controller.future)],
       ),
       body: WebView(
+
+        /// web main
         initialUrl: 'https://hanime.tv/browse/images',
+
+        /// 启用js
         javascriptMode: JavascriptMode.unrestricted,
+
+        /// webview创建完毕
         onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
         },
+
+        /// 页面加载完成，但是DOM可能未加载完毕
         onPageFinished: (String url) async {
           try {
             var c = await _controller.future;
@@ -37,6 +46,8 @@ class _WebPageState extends State<WebPage> {
             ''');
           } catch (_) {}
         },
+
+        /// webview导航时
         navigationDelegate: (NavigationRequest request) {
           if (request.url.indexOf('cdn.discordapp.com') >= 0) {
             // 防止导航
@@ -55,6 +66,9 @@ class _WebPageState extends State<WebPage> {
           return NavigationDecision.navigate;
         },
         gestureRecognizers: null,
+
+        /// 允许video/audio自动播放
+        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
       ),
     );
   }
