@@ -1,6 +1,6 @@
 name: himage
 description: himage
-version: 0.6.1
+version: 0.6.2
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -9,7 +9,6 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.0
-  http:
   built_value:
   built_collection:
   random_color: ^1.0.3
@@ -18,12 +17,14 @@ dependencies:
   mobx: ^1.2.1+2
   flutter_mobx: ^1.1.0+2
   flutter_imagenetwork:
-  video_box:
+  video_box: ^0.15.1
   permission_handler:
   gradient_text: ^1.0.2
   webview_flutter:
   toast:
   file_picker:
+  url_launcher: ^5.7.5
+  ajanuw_http: ^0.4.2
 
 dev_dependencies:
   flutter_test:

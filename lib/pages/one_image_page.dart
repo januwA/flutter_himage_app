@@ -6,9 +6,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
-import 'package:http/http.dart' as http;
+import 'package:ajanuw_http/ajanuw_http.dart';
 
-import '../global.dart';
+import '../global.dart' show imageSavePath;
 
 class OneImagePage extends StatefulWidget {
   static const routeName = '/OneImagePage';
@@ -21,6 +21,7 @@ class OneImagePage extends StatefulWidget {
 
 class _OneImagePageState extends State<OneImagePage> {
   Offset _tapPosition;
+  final api = AjanuwHttp();
 
   void _storePosition(TapDownDetails details) {
     _tapPosition = details.globalPosition;
@@ -67,51 +68,37 @@ class _OneImagePageState extends State<OneImagePage> {
 
     // 缓存目录路径，不免每次都选择目录
     String dpath = '';
-    if (savePath?.isNotEmpty ?? false) {
-      dpath = savePath;
+    if (imageSavePath?.isNotEmpty ?? false) {
+      dpath = imageSavePath;
     } else {
       dpath = await FilePicker.platform.getDirectoryPath();
-      if (dpath != null) savePath = dpath;
+      if (dpath != null) imageSavePath = dpath;
     }
 
     if (dpath != null) {
       var name = path.basename(originalImage);
-      var p = path.join(dpath, name);
+      var p =
+          path.join(dpath, '${DateTime.now().millisecondsSinceEpoch}-$name');
 
       // 3. 从网络获取图片保存到用户手机
-      Toast.show(
-        "开始下载",
-        context,
-        duration: Toast.LENGTH_SHORT,
-        gravity: Toast.CENTER,
-      );
-      http.get(originalImage).then((r) {
-        Toast.show(
-          "下载成功",
-          context,
-          duration: Toast.LENGTH_SHORT,
-          gravity: Toast.CENTER,
+      Toast.show("开始下载", context);
+      api.getStream(originalImage).then((r) {
+        var f$ = File(p).openWrite();
+        r.stream.listen(
+          f$.add,
+          onDone: () {
+            Toast.show("下载完成", context);
+            f$.close();
+          },
+          onError: (e) {
+            Toast.show("保存失败", context, textColor: Colors.red);
+            f$.close();
+          },
         );
-        File(p).writeAsBytes(r.bodyBytes).then((_) {
-          Toast.show(
-            "保存成功",
-            context,
-            duration: Toast.LENGTH_SHORT,
-            gravity: Toast.CENTER,
-          );
-        }).catchError(_downloadError);
-      }).catchError(_downloadError);
+      }).catchError((e) {
+        Toast.show("下载失败", context, textColor: Colors.red);
+      });
     }
-  }
-
-  _downloadError(_) {
-    Toast.show(
-      "下载失败",
-      context,
-      textColor: Colors.red,
-      duration: Toast.LENGTH_SHORT,
-      gravity: Toast.CENTER,
-    );
   }
 
   @override

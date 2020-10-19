@@ -1,1 +1,2 @@
-String savePath = '';
+String imageSavePath = '';
+String videoSavePath = '';
